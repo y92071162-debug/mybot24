@@ -1,4 +1,5 @@
 const mineflayer = require('mineflayer')
+const axios = require('axios'); // أضفنا هذه المكتبة
 
 function createBot() {
     const bot = mineflayer.createBot({
@@ -6,41 +7,28 @@ function createBot() {
         port: 25565,
         username: 'AFK_Bot_24_7',
         version: '1.21.1',
-        auth: 'offline',
-        checkTimeoutInterval: 60000 // رفع وقت الانتظار لـ 60 ثانية لتجنب الـ Timeout
+        auth: 'offline'
     })
 
-    bot.on('login', () => console.log('✅ البوت متصل الآن!'))
-
-    bot.on('spawn', () => {
-        console.log('🎮 البوت رسبن في السيرفر')
-        // حركة مستمرة بسيطة
-        setInterval(() => {
-            bot.setControlState('jump', true)
-            setTimeout(() => bot.setControlState('jump', false), 500)
-        }, 20000) 
-    })
-
-    // إعادة اتصال ذكية عند الطرد
-    bot.on('end', (reason) => {
-        console.log('❌ انفصل البوت بسبب: ' + reason + ' جاري العودة...')
-        setTimeout(createBot, 10000)
-    })
-
-    bot.on('error', (err) => {
-        if (err.code === 'ECONNREFUSED') {
-            console.log('⚠️ السيرفر مغلق حالياً، سأحاول لاحقاً')
-        } else {
-            console.log('⚠️ خطأ: ' + err.message)
-        }
-    })
+    bot.on('login', () => console.log('✅ البوت متصل باللعبة!'))
+    bot.on('end', () => setTimeout(createBot, 10000))
+    bot.on('error', (err) => console.log(err))
 }
 
 createBot()
 
-// كود إبقاء الاستضافة حية
+// --- الجزء الأسطوري لمنع النوم (Self-Ping) ---
 const http = require('http')
-http.createServer((req, res) => {
-    res.write('I am Alive!')
-    res.end()
+const server = http.createServer((req, res) => {
+    res.write('Bot is Running!');
+    res.end();
 }).listen(8080)
+
+// استبدل الرابط بالأسفل برابط الـ Render الخاص بك
+const RENDER_URL = 'https://mc-bot-xxxx.onrender.com'; 
+
+setInterval(() => {
+    axios.get(RENDER_URL)
+        .then(() => console.log('🔔 تم عمل Self-Ping بنجاح'))
+        .catch(err => console.log('⚠️ خطأ في البينج'));
+}, 600000); // كل 10 دقائق
