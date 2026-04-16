@@ -1,48 +1,46 @@
 const mineflayer = require('mineflayer');
-const axios = require('axios');
 const http = require('http');
 
+// إعدادات الدخول
 const botArgs = {
-    host: 'mnsmp.mcsh.io',
+    host: 'nmsmp.enderman.cloud',
     port: 25565,
     username: 'AFK_Bot_24_7',
-    version: '1.21.1', // جرب هذا أولاً، وإذا لم يعمل سأعطيك حلاً آخر بالأسفل
+    version: '1.21.1', // ثبتنا النسخة هنا يدوياً
     auth: 'offline',
-    checkTimeoutInterval: 120000
+    checkTimeoutInterval: 60000
 };
 
 let bot;
 
 function createBot() {
-    // هذه المرة سنترك mineflayer يحاول التعرف على الإصدار تلقائياً
-    bot = mineflayer.createBot({
-        ...botArgs,
-        version: false // وضعناها false لكي يكتشف البوت إصدار السيرفر بنفسه
-    });
+    if (bot) bot.quit();
+
+    bot = mineflayer.createBot(botArgs);
 
     bot.on('login', () => {
-        console.log('✅ تم الدخول بنجاح للإصدار 1.21.11!');
+        console.log('✅ تم الاتصال بنجاح بسيرفر Enderman Cloud!');
     });
 
     bot.on('spawn', () => {
-        setInterval(() => {
-            if (bot.entity) {
-                bot.look(Math.random() * 6, (Math.random() - 0.5) * 1);
-            }
-        }, 30000);
+        console.log('🎮 البوت رسبن الآن داخل العالم.');
     });
 
-    bot.on('end', (reason) => {
-        console.log('❌ فصل بسبب: ' + reason + ' .. إعادة اتصال خلال 10 ثوانٍ');
+    bot.on('kicked', (reason) => {
+        console.log('❌ البوت انطرد بسبب: ' + reason);
+    });
+
+    bot.on('end', () => {
+        console.log('🔄 فصل الاتصال.. محاولة إعادة دخول بعد 10 ثوانٍ');
         setTimeout(createBot, 10000);
     });
 
-    bot.on('error', (err) => console.log('⚠️ خطأ تقني:', err.message));
+    bot.on('error', (err) => console.log('⚠️ خطأ:', err.message));
 }
 
-// سيرفر الويب
+// سيرفر الويب للبقاء حياً
 http.createServer((req, res) => {
-    res.end('Bot is Active');
+    res.end('Bot is running');
 }).listen(8080);
 
 createBot();
