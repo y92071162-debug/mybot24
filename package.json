@@ -1,9 +1,11 @@
 {
   "name": "mc-bot",
   "version": "1.0.0",
+  "description": "24/7 AFK Bot",
   "main": "index.js",
   "dependencies": {
-    "mineflayer": "^4.23.0"
+    "mineflayer": "^4.23.0",
+    "axios": "^1.6.0"
   },
   "scripts": {
     "start": "node index.js"
