@@ -2,14 +2,16 @@ const mineflayer = require('mineflayer');
 const axios = require('axios');
 const http = require('http');
 
-// --- إعدادات السيرفر الجديد ---
 const botArgs = {
-    host: 'mnsmp.mcsh.io', // تم التحديث للـ IP الجديد
+    host: 'mnsmp.mcsh.io',
     port: 25565,
     username: 'AFK_Bot_24_7',
     version: '1.21.1',
     auth: 'offline',
-    checkTimeoutInterval: 90000 
+    // --- الحل الجذري هنا ---
+    checkTimeoutInterval: 120000, // رفعنا الوقت لـ دقيقتين كاملتين
+    connectTimeout: 60000,
+    keepAlive: true // الحفاظ على الجلسة حية
 };
 
 let bot;
@@ -18,39 +20,40 @@ function createBot() {
     bot = mineflayer.createBot(botArgs);
 
     bot.on('login', () => {
-        console.log('✅ تم الاتصال بالسيرفر الجديد: mnsmp.mcsh.io');
+        console.log('✅ البوت متصل ومستقر في mnsmp.mcsh.io');
     });
 
     bot.on('spawn', () => {
-        // حركة رأس عشوائية لمنع الطرد
+        // حركات بسيطة عشوائية لضمان عدم الطرد
         setInterval(() => {
             if (bot.entity) {
-                bot.look(Math.random() * Math.PI * 2, (Math.random() - 0.5) * Math.PI);
+                bot.look(Math.random() * 6.28, (Math.random() - 0.5) * 1.5);
+                bot.swingArm('right'); // حركة يد إضافية لإثبات الوجود
             }
-        }, 30000);
+        }, 25000);
     });
 
-    bot.on('end', () => {
-        console.log('❌ فصل البوت.. جاري إعادة المحاولة');
-        setTimeout(createBot, 10000);
+    bot.on('end', (reason) => {
+        console.log('❌ فصل بسبب: ' + reason + ' .. إعادة اتصال خلال 5 ثوانٍ');
+        setTimeout(createBot, 5000);
     });
 
-    bot.on('error', (err) => console.log('⚠️ خطأ:', err.message));
+    bot.on('error', (err) => {
+        if (err.message.includes('timeout')) return; // تجاهل رسائل التايم آوت في اللوجز
+        console.log('⚠️ خطأ تقني:', err.message);
+    });
 }
 
-// --- سيرفر الويب للبقاء حياً 24/7 ---
+// سيرفر الويب للبقاء حياً
 http.createServer((req, res) => {
-    res.write('<h1>MN-SMP Bot is Online</h1>');
-    res.end();
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Bot Status: ACTIVE 24/7');
 }).listen(8080);
 
-// استبدل الرابط بالأسفل برابط الـ Render الخاص بك ليعمل الـ Self-Ping
-const RENDER_URL = 'https://mc-bot-xxxx.onrender.com'; 
-
+// Self-Ping
+const RENDER_URL = 'https://mc-bot-xxxx.onrender.com'; // تأكد من وضع رابطك هنا
 setInterval(() => {
-    axios.get(RENDER_URL)
-        .then(() => console.log('🔔 Self-Ping Success'))
-        .catch(() => console.log('🔔 Bot is awake'));
-}, 300000); 
+    axios.get(RENDER_URL).catch(() => {});
+}, 280000);
 
 createBot();
